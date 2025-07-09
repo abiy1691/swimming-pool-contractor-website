@@ -626,6 +626,128 @@ function Home() {
                   ))}
                 </div>
               </div>
+
+              {/* Discover More Button - After Why Choose Surax items */}
+              <div style={{ marginTop: "40px", textAlign: "center" }}>
+                <button
+                  onClick={() => {
+                    document.getElementById("services").scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    })
+                  }}
+                  style={{
+                    background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #60a5fa 100%)",
+                    backgroundSize: "200% 200%",
+                    color: "white",
+                    padding: "15px 35px",
+                    borderRadius: "50px",
+                    border: "none",
+                    fontSize: "1rem",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: "0 8px 25px rgba(59,130,246,0.3), 0 0 0 0 rgba(59,130,246,0.4)",
+                    position: "relative",
+                    overflow: "hidden",
+                    animation: "buttonFloat 3s ease-in-out infinite, waterGradientFlow 4s ease-in-out infinite",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                    letterSpacing: "0.5px",
+                    transform: "translateY(0) scale(1)",
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = "translateY(-5px) scale(1.05)"
+                    e.target.style.boxShadow = "0 15px 40px rgba(59,130,246,0.5), 0 0 30px rgba(59,130,246,0.6)"
+                    e.target.style.backgroundPosition = "100% 0%"
+
+                    // Create water ripple effect
+                    const ripple = document.createElement("div")
+                    ripple.style.position = "absolute"
+                    ripple.style.top = "50%"
+                    ripple.style.left = "50%"
+                    ripple.style.transform = "translate(-50%, -50%)"
+                    ripple.style.width = "0"
+                    ripple.style.height = "0"
+                    ripple.style.borderRadius = "50%"
+                    ripple.style.background =
+                      "radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 70%, transparent 100%)"
+                    ripple.style.animation = "buttonRipple 0.8s ease-out"
+                    ripple.style.pointerEvents = "none"
+                    ripple.style.zIndex = "1"
+                    e.target.appendChild(ripple)
+
+                    setTimeout(() => {
+                      if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple)
+                      }
+                    }, 800)
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = "translateY(0) scale(1)"
+                    e.target.style.boxShadow = "0 8px 25px rgba(59,130,246,0.3), 0 0 0 0 rgba(59,130,246,0.4)"
+                    e.target.style.backgroundPosition = "0% 0%"
+                  }}
+                  onMouseDown={(e) => {
+                    e.target.style.transform = "translateY(-2px) scale(1.02)"
+
+                    // Water splash effect
+                    const splash = document.createElement("div")
+                    splash.style.position = "absolute"
+                    splash.style.top = "0"
+                    splash.style.left = "0"
+                    splash.style.right = "0"
+                    splash.style.bottom = "0"
+                    splash.style.borderRadius = "50px"
+                    splash.style.background =
+                      "radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, transparent 80%)"
+                    splash.style.animation = "buttonSplash 0.6s ease-out"
+                    splash.style.pointerEvents = "none"
+                    splash.style.zIndex = "2"
+                    e.target.appendChild(splash)
+
+                    setTimeout(() => {
+                      if (splash.parentNode) {
+                        splash.parentNode.removeChild(splash)
+                      }
+                    }, 600)
+                  }}
+                  onMouseUp={(e) => {
+                    e.target.style.transform = "translateY(-5px) scale(1.05)"
+                  }}
+                >
+                  {/* Water wave background effect */}
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)",
+                      borderRadius: "50px",
+                      animation: "buttonWaveFlow 3s ease-in-out infinite",
+                      pointerEvents: "none",
+                      zIndex: "0",
+                    }}
+                  />
+
+                  {/* Button text with icon */}
+                  <span
+                    style={{
+                      position: "relative",
+                      zIndex: "3",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span style={{ animation: "discoverIcon 2s ease-in-out infinite" }}>🌊</span>
+                    Discover More
+                    <span style={{ animation: "arrowFloat 2s ease-in-out infinite" }}>→</span>
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Right Content - Video with Short Swimming Pool URL */}
@@ -1875,6 +1997,82 @@ function Home() {
           50% {
             opacity: 0.6;
             transform: translateX(-50%) scale(1.2);
+          }
+        }
+
+        @keyframes buttonFloat {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-3px);
+          }
+        }
+
+        @keyframes waterGradientFlow {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        @keyframes buttonRipple {
+          0% {
+            width: 0;
+            height: 0;
+            opacity: 1;
+          }
+          100% {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+          }
+        }
+
+        @keyframes buttonSplash {
+          0% {
+            transform: scale(0);
+            opacity: 0.8;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 0.4;
+          }
+          100% {
+            transform: scale(1.8);
+            opacity: 0;
+          }
+        }
+
+        @keyframes buttonWaveFlow {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        @keyframes discoverIcon {
+          0%, 100% {
+            transform: scale(1) rotate(0deg);
+          }
+          50% {
+            transform: scale(1.2) rotate(15deg);
+          }
+        }
+
+        @keyframes arrowFloat {
+          0%, 100% {
+            transform: translateX(0px);
+          }
+          50% {
+            transform: translateX(5px);
           }
         }
       `}</style>
