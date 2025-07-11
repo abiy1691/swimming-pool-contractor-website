@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
-import { Phone, MapPin, Clock, Facebook, Twitter, Instagram, Linkedin, ChevronLeft, ChevronRight } from "lucide-react"
+import { Facebook, Instagram, Linkedin, ChevronLeft, ChevronRight } from "lucide-react"
 import Navbar from "./Navbar"
+import Footer from "./Footer"
 
 // Complete media data
 const mediaData = [
@@ -32,6 +33,39 @@ const mediaData = [
   },
 ]
 
+// Service background images
+const serviceImages = [
+  "https://images.pexels.com/photos/2227774/pexels-photo-2227774.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "https://images.pexels.com/photos/8845113/pexels-photo-8845113.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "https://images.pexels.com/photos/1058282/pexels-photo-1058282.jpeg?auto=compress&cs=tinysrgb&w=800",
+  "https://images.pexels.com/photos/2446439/pexels-photo-2446439.jpeg?auto=compress&cs=tinysrgb&w=800",
+]
+
+// Testimonials data
+const testimonials = [
+  {
+    name: "Ahmed Hassan",
+    role: "Villa Owner",
+    image: "/placeholder.svg?height=80&width=80",
+    text: "Surax built an amazing swimming pool for our villa. The quality and attention to detail exceeded our expectations. Highly recommended!",
+    rating: 5,
+  },
+  {
+    name: "Sarah Mekonnen",
+    role: "Hotel Manager",
+    image: "/placeholder.svg?height=80&width=80",
+    text: "The fountain they installed at our hotel lobby is absolutely stunning. It has become the centerpiece that guests always admire.",
+    rating: 5,
+  },
+  {
+    name: "David Tadesse",
+    role: "Restaurant Owner",
+    image: "/placeholder.svg?height=80&width=80",
+    text: "Our aquarium installation was completed on time and within budget. The fish are thriving and customers love the ambiance it creates.",
+    rating: 5,
+  },
+]
+
 function Home() {
   console.log("🏊‍♂️ SURAX SWIMMING POOL WEBSITE LOADING...")
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -41,6 +75,26 @@ function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [showWorkingHours, setShowWorkingHours] = useState(true)
   const [showContactInfo, setShowContactInfo] = useState(true)
+  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+
+  // Contact form state
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Counter states
+  const [counters, setCounters] = useState({
+    customers: 0,
+    experience: 0,
+    projects: 0,
+    engineers: 0,
+  })
+
+  const [hasAnimated, setHasAnimated] = useState(false)
 
   // Auto-slide every 5 seconds
   useEffect(() => {
@@ -56,14 +110,13 @@ function Home() {
         setTimeout(() => setIsTransitioning(false), 100)
       }, 300)
     }, 5000)
-
     return () => {
       console.log("🧹 Cleaning up interval")
       clearInterval(interval)
     }
   }, [])
 
-  // Social media icons - show/hide every 5 seconds (increased from 3 seconds)
+  // Social media icons - show/hide every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setShowSocialMedia((prev) => !prev)
@@ -86,6 +139,113 @@ function Home() {
     }, 3000)
     return () => clearInterval(interval)
   }, [])
+
+  // Testimonial auto-slide
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Counter animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCounters() // Remove hasAnimated condition
+          }
+        })
+      },
+      { threshold: 0.3 }, // Lower threshold
+    )
+
+    const statsSection = document.getElementById("stats-section")
+    if (statsSection) {
+      observer.observe(statsSection)
+    }
+
+    // Also trigger on page load
+    const timer = setTimeout(() => {
+      const statsElement = document.getElementById("stats-section")
+      if (statsElement) {
+        const rect = statsElement.getBoundingClientRect()
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          animateCounters()
+        }
+      }
+    }, 1000)
+
+    return () => {
+      observer.disconnect()
+      clearTimeout(timer)
+    }
+  }, []) // Remove hasAnimated dependency
+
+  const animateCounters = () => {
+    const targets = { customers: 18, experience: 8, projects: 15, engineers: 12 } // Change from higher numbers
+    const duration = 2000
+    const steps = 60
+    const stepTime = duration / steps
+
+    Object.keys(targets).forEach((key) => {
+      let current = 0
+      const increment = targets[key] / steps
+      const timer = setInterval(() => {
+        current += increment
+        if (current >= targets[key]) {
+          current = targets[key]
+          clearInterval(timer)
+        }
+        setCounters((prev) => ({ ...prev, [key]: Math.floor(current) }))
+      }, stepTime)
+    })
+  }
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      // Create mailto link with form data
+      const subject = encodeURIComponent(`Contact Form Submission from ${contactForm.name}`)
+      const body = encodeURIComponent(`
+Name: ${contactForm.name}
+Email: ${contactForm.email}
+Phone: ${contactForm.phone}
+
+Message:
+${contactForm.message}
+      `)
+
+      const mailtoLink = `mailto:abiy1691@gmail.com?subject=${subject}&body=${body}`
+      window.open(mailtoLink)
+
+      // Reset form
+      setContactForm({
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+      })
+
+      alert("Email client opened! Please send the email from your email application.")
+    } catch (error) {
+      console.error("Error:", error)
+      alert("There was an error. Please try again or contact us directly.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setContactForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
 
   const currentMedia = mediaData[currentSlide]
   console.log("🎨 Current slide:", currentSlide, currentMedia.label)
@@ -127,8 +287,8 @@ function Home() {
         minHeight: "100vh",
         margin: 0,
         padding: 0,
-        width: "100%", // Changed from 100vw to 100%
-        maxWidth: "none", // Remove max width constraint
+        width: "100%",
+        maxWidth: "none",
         overflowX: "hidden",
         boxSizing: "border-box",
       }}
@@ -141,19 +301,18 @@ function Home() {
         <div
           style={{
             position: "fixed",
-            left: "10px", // Changed from "20px" to "10px"
-            top: "60%", // Lowered from 50% to 60%
+            left: "10px",
+            top: "60%",
             transform: "translateY(-50%)",
             zIndex: 45,
             display: "flex",
             flexDirection: "column",
-            gap: "8px", // Reduced from 12px
+            gap: "8px",
             animation: "socialSlideIn 0.6s ease-out",
           }}
         >
           {[
             { Icon: Facebook, bg: "#1877f2", label: "Facebook" },
-            { Icon: Twitter, bg: "#1da1f2", label: "Twitter" },
             { Icon: Instagram, bg: "#e4405f", label: "Instagram" },
             { Icon: Linkedin, bg: "#0077b5", label: "LinkedIn" },
           ].map(({ Icon, bg, label }, index) => (
@@ -163,16 +322,16 @@ function Home() {
               title={label}
               style={{
                 backgroundColor: bg,
-                padding: "8px", // Reduced from 12px
+                padding: "8px",
                 borderRadius: "50%",
                 transition: "all 0.4s ease",
                 backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.2)", // Reduced border
+                border: "1px solid rgba(255,255,255,0.2)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 animation: `socialFadeIn 0.6s ease-in-out ${index * 0.1}s both`,
-                boxShadow: "0 2px 10px rgba(0,0,0,0.15)", // Reduced shadow
+                boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
               }}
               onMouseOver={(e) => {
                 e.target.style.transform = "scale(1.2) rotate(360deg)"
@@ -183,9 +342,40 @@ function Home() {
                 e.target.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)"
               }}
             >
-              <Icon style={{ width: "12px", height: "12px", color: "white" }} /> {/* Reduced from 18px */}
+              <Icon style={{ width: "12px", height: "12px", color: "white" }} />
             </a>
           ))}
+          {/* X (Twitter) Icon */}
+          <a
+            href="#"
+            title="X (Twitter)"
+            style={{
+              backgroundColor: "#000000",
+              padding: "8px",
+              borderRadius: "50%",
+              transition: "all 0.4s ease",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              animation: `socialFadeIn 0.6s ease-in-out 0.3s both`,
+              boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+              fontSize: "12px",
+              fontWeight: "bold",
+              color: "white",
+            }}
+            onMouseOver={(e) => {
+              e.target.style.transform = "scale(1.2) rotate(360deg)"
+              e.target.style.boxShadow = "0 4px 15px rgba(59,130,246,0.4)"
+            }}
+            onMouseOut={(e) => {
+              e.target.style.transform = "scale(1) rotate(0deg)"
+              e.target.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)"
+            }}
+          >
+            𝕏
+          </a>
         </div>
       )}
 
@@ -194,10 +384,10 @@ function Home() {
         id="home"
         style={{
           position: "relative",
-          width: "100%", // Changed from 100vw
+          width: "100%",
           height: "100vh",
           overflow: "hidden",
-          paddingTop: "50px",
+          paddingTop: "40px",
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3)), url(${currentMedia.image})`,
           backgroundSize: "cover",
           backgroundPosition: "center center",
@@ -209,7 +399,7 @@ function Home() {
           filter: isTransitioning ? "blur(1px)" : "blur(0px)",
           margin: 0,
           padding: 0,
-          paddingTop: "50px",
+          paddingTop: "40px",
           left: 0,
           right: 0,
         }}
@@ -279,7 +469,6 @@ function Home() {
             <ChevronLeft style={{ width: "24px", height: "24px" }} />
           </button>
         )}
-
         {rightHover && (
           <button
             onClick={handleNext}
@@ -327,53 +516,46 @@ function Home() {
             padding: "20px",
             zIndex: 20,
             width: "100%",
-            maxWidth: "1400px", // Increased max width for full screen
+            maxWidth: "1400px",
           }}
         >
-          {/* Main Title with Water Color Animation - Professional Size */}
+          {/* Main Title with Water Color Animation */}
           <h1
             key={`title-${currentSlide}`}
             style={{
-              fontSize: "3rem", // Reduced from 4.5rem to professional size
+              fontSize: "3rem",
               fontWeight: "700",
               marginBottom: "25px",
-              color: "rgba(255,255,255,0.9)", // Transparent water color
-              textShadow: "2px 2px 8px rgba(0,0,0,0.7), 0 0 30px rgba(59,130,246,0.3)",
+              color: "white", // Changed to white
+              textShadow: "2px 2px 8px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.3)",
               lineHeight: "1.1",
               letterSpacing: "1px",
               animation: isTransitioning
                 ? "textSlideOut 0.5s ease-in-out"
                 : "textSlideIn 1s ease-out 0.2s both, waterColorFlow 6s ease-in-out infinite",
               transform: isTransitioning ? "translateY(-40px) scale(0.95)" : "translateY(0) scale(1)",
-              opacity: isTransitioning ? 0 : 0.9, // Transparent
+              opacity: isTransitioning ? 0 : 1,
               transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-              background:
-                "linear-gradient(45deg, rgba(96,165,250,0.8), rgba(59,130,246,0.8), rgba(30,64,175,0.8), rgba(96,165,250,0.8))",
-              backgroundSize: "300% 300%",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
             }}
           >
             {currentMedia.label}
           </h1>
-
-          {/* Description - Professional Size */}
+          {/* Description */}
           <p
             key={`desc-${currentSlide}`}
             style={{
-              fontSize: "1.1rem", // Reduced from 1.3rem to professional size
+              fontSize: "1.1rem",
               marginBottom: "60px",
-              maxWidth: "900px", // Increased for full screen
+              maxWidth: "900px",
               margin: "0 auto 60px auto",
               textShadow: "1px 1px 4px rgba(0,0,0,0.8)",
               lineHeight: "1.5",
-              color: "rgba(241,245,249,0.8)", // Transparent water color
+              color: "white", // Changed to white
               fontWeight: "400",
               letterSpacing: "0.5px",
               animation: isTransitioning ? "textFadeOut 0.4s ease-in-out" : "textFadeIn 0.8s ease-out 0.4s both",
               transform: isTransitioning ? "translateY(30px)" : "translateY(0)",
-              opacity: isTransitioning ? 0 : 0.8, // Transparent
+              opacity: isTransitioning ? 0 : 1,
               transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
@@ -467,11 +649,11 @@ function Home() {
       <section
         id="about"
         style={{
-          padding: "100px 0", // Remove horizontal padding to use full width
+          padding: "100px 0",
           background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
           position: "relative",
           overflow: "hidden",
-          width: "100%", // Changed from 100vw
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
@@ -490,13 +672,13 @@ function Home() {
         />
         <div
           style={{
-            maxWidth: "1400px", // Increased max width for full screen
+            maxWidth: "1400px",
             margin: "0 auto",
             position: "relative",
             zIndex: 2,
             width: "100%",
             boxSizing: "border-box",
-            padding: "0 40px", // Add padding back for content
+            padding: "0 40px",
           }}
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "center" }}>
@@ -505,9 +687,9 @@ function Home() {
               {/* Animated Title */}
               <h3
                 style={{
-                  fontSize: "1.8rem", // Professional size
+                  fontSize: "1.8rem",
                   fontWeight: "700",
-                  color: "rgba(30,41,59,0.9)", // Transparent water color
+                  color: "rgba(30,41,59,0.9)",
                   marginBottom: "20px",
                   animation: "titleFloat 4s ease-in-out infinite",
                   background: "linear-gradient(45deg, rgba(30,41,59,0.9), rgba(59,130,246,0.8), rgba(30,41,59,0.9))",
@@ -529,9 +711,9 @@ function Home() {
               </h3>
               <div
                 style={{
-                  fontSize: "1.5rem", // Professional size
+                  fontSize: "1.5rem",
                   fontWeight: "600",
-                  color: "rgba(59,130,246,0.9)", // Transparent water color
+                  color: "rgba(59,130,246,0.9)",
                   marginBottom: "30px",
                   display: "flex",
                   alignItems: "center",
@@ -544,9 +726,9 @@ function Home() {
               </div>
               <p
                 style={{
-                  fontSize: "1rem", // Professional size
+                  fontSize: "1rem",
                   lineHeight: "1.8",
-                  color: "rgba(71,85,105,0.8)", // Transparent water color
+                  color: "rgba(71,85,105,0.8)",
                   marginBottom: "30px",
                 }}
               >
@@ -554,14 +736,13 @@ function Home() {
                 building a serene swimming pool, a luxurious jacuzzi, a decorative fountain, or a vibrant aquarium, we
                 bring unmatched craftsmanship, custom designs, and lasting quality — right here in Ethiopia.
               </p>
-
-              {/* Why Choose Surax - Plain Text with Water Hover Effects */}
+              {/* Why Choose Surax */}
               <div style={{ marginBottom: "30px" }}>
                 <h4
                   style={{
-                    fontSize: "1.3rem", // Professional size
+                    fontSize: "1.3rem",
                     fontWeight: "700",
-                    color: "rgba(30,41,59,0.9)", // Transparent water color
+                    color: "rgba(30,41,59,0.9)",
                     marginBottom: "20px",
                     display: "block",
                     width: "100%",
@@ -580,8 +761,8 @@ function Home() {
                     <p
                       key={index}
                       style={{
-                        fontSize: "0.95rem", // Professional size
-                        color: "rgba(71,85,105,0.8)", // Transparent water color
+                        fontSize: "0.95rem",
+                        color: "rgba(71,85,105,0.8)",
                         margin: 0,
                         padding: "10px 0",
                         cursor: "pointer",
@@ -593,7 +774,6 @@ function Home() {
                         e.currentTarget.style.transform = "translateX(10px) scale(1.05)"
                         e.currentTarget.style.color = "rgba(59,130,246,0.9)"
                         e.currentTarget.style.textShadow = "0 0 15px rgba(59,130,246,0.4)"
-
                         // Create water ripple effect
                         const ripple = document.createElement("div")
                         ripple.style.position = "absolute"
@@ -608,7 +788,6 @@ function Home() {
                         ripple.style.pointerEvents = "none"
                         ripple.style.zIndex = "1"
                         e.currentTarget.appendChild(ripple)
-
                         setTimeout(() => {
                           if (ripple.parentNode) {
                             ripple.parentNode.removeChild(ripple)
@@ -626,8 +805,7 @@ function Home() {
                   ))}
                 </div>
               </div>
-
-              {/* Discover More Button - After Why Choose Surax items */}
+              {/* Discover More Button */}
               <div style={{ marginTop: "40px", textAlign: "center" }}>
                 <button
                   onClick={() => {
@@ -659,79 +837,13 @@ function Home() {
                     e.target.style.transform = "translateY(-5px) scale(1.05)"
                     e.target.style.boxShadow = "0 15px 40px rgba(59,130,246,0.5), 0 0 30px rgba(59,130,246,0.6)"
                     e.target.style.backgroundPosition = "100% 0%"
-
-                    // Create water ripple effect
-                    const ripple = document.createElement("div")
-                    ripple.style.position = "absolute"
-                    ripple.style.top = "50%"
-                    ripple.style.left = "50%"
-                    ripple.style.transform = "translate(-50%, -50%)"
-                    ripple.style.width = "0"
-                    ripple.style.height = "0"
-                    ripple.style.borderRadius = "50%"
-                    ripple.style.background =
-                      "radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 70%, transparent 100%)"
-                    ripple.style.animation = "buttonRipple 0.8s ease-out"
-                    ripple.style.pointerEvents = "none"
-                    ripple.style.zIndex = "1"
-                    e.target.appendChild(ripple)
-
-                    setTimeout(() => {
-                      if (ripple.parentNode) {
-                        ripple.parentNode.removeChild(ripple)
-                      }
-                    }, 800)
                   }}
                   onMouseOut={(e) => {
                     e.target.style.transform = "translateY(0) scale(1)"
                     e.target.style.boxShadow = "0 8px 25px rgba(59,130,246,0.3), 0 0 0 0 rgba(59,130,246,0.4)"
                     e.target.style.backgroundPosition = "0% 0%"
                   }}
-                  onMouseDown={(e) => {
-                    e.target.style.transform = "translateY(-2px) scale(1.02)"
-
-                    // Water splash effect
-                    const splash = document.createElement("div")
-                    splash.style.position = "absolute"
-                    splash.style.top = "0"
-                    splash.style.left = "0"
-                    splash.style.right = "0"
-                    splash.style.bottom = "0"
-                    splash.style.borderRadius = "50px"
-                    splash.style.background =
-                      "radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, transparent 80%)"
-                    splash.style.animation = "buttonSplash 0.6s ease-out"
-                    splash.style.pointerEvents = "none"
-                    splash.style.zIndex = "2"
-                    e.target.appendChild(splash)
-
-                    setTimeout(() => {
-                      if (splash.parentNode) {
-                        splash.parentNode.removeChild(splash)
-                      }
-                    }, 600)
-                  }}
-                  onMouseUp={(e) => {
-                    e.target.style.transform = "translateY(-5px) scale(1.05)"
-                  }}
                 >
-                  {/* Water wave background effect */}
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)",
-                      borderRadius: "50px",
-                      animation: "buttonWaveFlow 3s ease-in-out infinite",
-                      pointerEvents: "none",
-                      zIndex: "0",
-                    }}
-                  />
-
-                  {/* Button text with icon */}
                   <span
                     style={{
                       position: "relative",
@@ -749,8 +861,7 @@ function Home() {
                 </button>
               </div>
             </div>
-
-            {/* Right Content - Video with Short Swimming Pool URL */}
+            {/* Right Content - Video */}
             <div
               style={{
                 position: "relative",
@@ -777,13 +888,11 @@ function Home() {
                 playsInline
                 controls
               >
-                {/* Short swimming pool video */}
                 <source
                   src="https://player.vimeo.com/external/371433846.sd.mp4?s=236a2e5c2c7b1c1a7b8b8c8d8e8f8g8h8i8j8k8l&profile_id=164&oauth2_token_id=57447761"
                   type="video/mp4"
                 />
                 <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
-
                 {/* Fallback content */}
                 <div
                   style={{
@@ -833,60 +942,40 @@ function Home() {
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* Enhanced Services Section with Background Images */}
       <section
         id="services"
         style={{
-          padding: "100px 0", // Remove horizontal padding for full width
-          background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
-          color: "white",
+          padding: "100px 0",
+          background: "#ffffff", // White background as requested
+          color: "#1e293b",
           position: "relative",
           overflow: "hidden",
-          width: "100%", // Changed from 100vw
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
-        {/* Background Water Effect */}
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "radial-gradient(circle at 30% 40%, rgba(59,130,246,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(59,130,246,0.1) 0%, transparent 50%)",
-            animation: "waterFlow 25s ease-in-out infinite reverse",
-          }}
-        />
-        <div
-          style={{
-            maxWidth: "1400px", // Increased max width for full screen
+            maxWidth: "1400px",
             margin: "0 auto",
             position: "relative",
             zIndex: 2,
             width: "100%",
             boxSizing: "border-box",
-            maxWidth: "1400px", // Increased max width for full screen
-            margin: "0 auto",
-            position: "relative",
-            zIndex: 2,
-            width: "100%",
-            boxSizing: "border-box",
-            padding: "0 40px", // Add padding back for content
+            padding: "0 40px",
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "80px" }}>
             <h2
               style={{
-                fontSize: "2.5rem", // Professional size
+                fontSize: "2.5rem",
                 fontWeight: "800",
-                color: "rgba(255,255,255,0.9)", // Transparent water color
+                color: "#1e293b",
                 marginBottom: "20px",
                 textShadow: "0 0 30px rgba(59,130,246,0.3)",
                 animation: "waterColorFlow 8s ease-in-out infinite",
-                background:
-                  "linear-gradient(45deg, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(30,64,175,0.9), rgba(96,165,250,0.9))",
+                background: "linear-gradient(45deg, #1e293b, #3b82f6, #1e293b)",
                 backgroundSize: "300% 300%",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -906,8 +995,8 @@ function Home() {
             />
             <p
               style={{
-                fontSize: "1.1rem", // Professional size
-                color: "rgba(203,213,225,0.8)", // Transparent water color
+                fontSize: "1.1rem",
+                color: "#64748b",
                 marginTop: "20px",
                 maxWidth: "600px",
                 margin: "20px auto 0",
@@ -916,6 +1005,8 @@ function Home() {
               🛠️ What We Offer - Professional Water Feature Solutions
             </p>
           </div>
+
+          {/* Service Cards with Background Images */}
           <div
             style={{
               display: "grid",
@@ -923,227 +1014,395 @@ function Home() {
               gap: "40px",
               width: "100%",
               boxSizing: "border-box",
+              marginBottom: "60px",
             }}
           >
             {[
               {
-                icon: "🏊",
                 title: "Swimming Pool Construction",
-                description: "Custom swimming pool designs with superior quality and professional installation.",
-                features: ["Custom Designs", "Quality Materials", "Professional Installation"],
+                description:
+                  "Custom swimming pool designs with superior quality and professional installation. Transform your backyard into a luxury oasis with our expert craftsmanship.",
+                image: serviceImages[0],
               },
               {
-                icon: "🛁",
                 title: "Jacuzzi Installation",
-                description: "Luxury jacuzzi setups for ultimate relaxation and comfort in your space.",
-                features: ["Luxury Designs", "Therapeutic Features", "Energy Efficient"],
+                description:
+                  "Luxury jacuzzi setups for ultimate relaxation and comfort in your space. Experience therapeutic benefits with our premium installations.",
+                image: serviceImages[1],
               },
               {
-                icon: "⛲",
                 title: "Fountain Design",
-                description: "Elegant decorative fountains that add beauty and tranquility to any environment.",
-                features: ["Artistic Designs", "Water Features", "Landscape Integration"],
+                description:
+                  "Elegant decorative fountains that add beauty and tranquility to any environment. Perfect for hotels, restaurants, and residential properties.",
+                image: serviceImages[2],
               },
               {
-                icon: "🐠",
                 title: "Aquarium Setup",
-                description: "Custom aquarium installations with vibrant designs and surax maintenance.",
-                features: ["Custom Tanks", "Aquatic Life", "Maintenance Support"],
+                description:
+                  "Custom aquarium installations with vibrant designs and expert maintenance. Bring the underwater world into your home or office space.",
+                image: serviceImages[3],
               },
             ].map((service, index) => (
               <div
                 key={index}
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  backdropFilter: "blur(10px)",
+                  position: "relative",
+                  height: "400px",
                   borderRadius: "20px",
-                  padding: "40px",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  transition: "all 0.4s ease",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                  backgroundImage: `url(${service.image})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  animation: "waterFloat 6s ease-in-out infinite",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateY(-15px) scale(1.02)"
+                  e.currentTarget.style.boxShadow = "0 25px 50px rgba(59,130,246,0.3)"
+
+                  // Show description overlay
+                  const overlay = e.currentTarget.querySelector(".service-overlay")
+                  if (overlay) {
+                    overlay.style.opacity = "1"
+                    overlay.style.transform = "translateY(0)"
+                  }
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateY(0) scale(1)"
+                  e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.1)"
+
+                  // Hide description overlay
+                  const overlay = e.currentTarget.querySelector(".service-overlay")
+                  if (overlay) {
+                    overlay.style.opacity = "0"
+                    overlay.style.transform = "translateY(20px)"
+                  }
+                }}
+              >
+                {/* Water ripple effect */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)",
+                    animation: "waterRippleService 4s ease-in-out infinite",
+                    pointerEvents: "none",
+                  }}
+                />
+
+                {/* Title overlay - always visible */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "0",
+                    left: "0",
+                    right: "0",
+                    background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+                    padding: "40px 30px 30px",
+                    color: "white",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "1.4rem",
+                      fontWeight: "700",
+                      marginBottom: "10px",
+                      textShadow: "0 2px 4px rgba(0,0,0,0.8)",
+                    }}
+                  >
+                    {service.title}
+                  </h3>
+                </div>
+
+                {/* Description overlay - shown on hover */}
+                <div
+                  className="service-overlay"
+                  style={{
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                    right: "0",
+                    bottom: "0",
+                    background: "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9))",
+                    padding: "40px 30px",
+                    color: "white",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center",
+                    opacity: "0",
+                    transform: "translateY(20px)",
+                    transition: "all 0.4s ease",
+                    backdropFilter: "blur(5px)",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "1.4rem",
+                      fontWeight: "700",
+                      marginBottom: "20px",
+                      textShadow: "0 2px 4px rgba(0,0,0,0.8)",
+                    }}
+                  >
+                    {service.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: "1rem",
+                      lineHeight: "1.6",
+                      textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                    }}
+                  >
+                    {service.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Discover More Button */}
+          <div style={{ textAlign: "center", marginBottom: "80px" }}>
+            <button
+              onClick={() => {
+                document.getElementById("stats-section").scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+              }}
+              style={{
+                background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #60a5fa 100%)",
+                backgroundSize: "200% 200%",
+                color: "white",
+                padding: "15px 35px",
+                borderRadius: "50px",
+                border: "none",
+                fontSize: "1rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "0 8px 25px rgba(59,130,246,0.3)",
+                position: "relative",
+                overflow: "hidden",
+                animation: "buttonFloat 3s ease-in-out infinite, waterGradientFlow 4s ease-in-out infinite",
+                textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                letterSpacing: "0.5px",
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = "translateY(-5px) scale(1.05)"
+                e.target.style.boxShadow = "0 15px 40px rgba(59,130,246,0.5)"
+                e.target.style.backgroundPosition = "100% 0%"
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = "translateY(0) scale(1)"
+                e.target.style.boxShadow = "0 8px 25px rgba(59,130,246,0.3)"
+                e.target.style.backgroundPosition = "0% 0%"
+              }}
+            >
+              <span
+                style={{
+                  position: "relative",
+                  zIndex: "3",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ animation: "discoverIcon 2s ease-in-out infinite" }}>🌊</span>
+                Discover More
+                <span style={{ animation: "arrowFloat 2s ease-in-out infinite" }}>→</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section
+        id="stats-section"
+        style={{
+          padding: "100px 0",
+          background: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)",
+          position: "relative",
+          overflow: "hidden",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            position: "relative",
+            zIndex: 2,
+            width: "100%",
+            boxSizing: "border-box",
+            padding: "0 40px",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gap: "40px",
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
+            {[
+              {
+                icon: "😊",
+                number: counters.customers,
+                suffix: "+",
+                title: "Happy Customers",
+                description: "Satisfied clients across Ethiopia",
+              },
+              {
+                icon: "📅",
+                number: counters.experience,
+                suffix: "+",
+                title: "Years of Experience",
+                description: "Professional expertise in water features",
+              },
+              {
+                icon: "🏗️",
+                number: counters.projects,
+                suffix: "+",
+                title: "Completed Projects",
+                description: "Successfully delivered installations",
+              },
+              {
+                icon: "👷",
+                number: counters.engineers,
+                suffix: "+",
+                title: "Qualified Engineers",
+                description: "Expert team members",
+              },
+            ].map((stat, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "20px",
+                  padding: "40px 30px",
+                  textAlign: "center",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
                   transition: "all 0.4s ease",
                   cursor: "pointer",
                   position: "relative",
                   overflow: "hidden",
-                  width: "100%",
-                  boxSizing: "border-box",
+                  animation: `statFloat ${3 + index * 0.5}s ease-in-out infinite`,
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = "translateY(-10px)"
-                  e.currentTarget.style.backgroundColor = "rgba(59,130,246,0.1)"
-                  e.currentTarget.style.boxShadow = "0 20px 60px rgba(59,130,246,0.2)"
+                  e.currentTarget.style.transform = "translateY(-15px) scale(1.05)"
+                  e.currentTarget.style.boxShadow = "0 25px 50px rgba(59,130,246,0.2)"
 
-                  // Water hover effect
-                  const waterEffect = document.createElement("div")
-                  waterEffect.style.position = "absolute"
-                  waterEffect.style.top = "0"
-                  waterEffect.style.left = "0"
-                  waterEffect.style.right = "0"
-                  waterEffect.style.bottom = "0"
-                  waterEffect.style.background = "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)"
-                  waterEffect.style.borderRadius = "20px"
-                  waterEffect.style.animation = "waterWaveEffect 2s ease-in-out infinite"
-                  waterEffect.style.pointerEvents = "none"
-                  waterEffect.style.zIndex = "1"
-                  e.currentTarget.appendChild(waterEffect)
+                  // Water ripple effect
+                  const ripple = document.createElement("div")
+                  ripple.style.position = "absolute"
+                  ripple.style.top = "50%"
+                  ripple.style.left = "50%"
+                  ripple.style.transform = "translate(-50%, -50%)"
+                  ripple.style.width = "0"
+                  ripple.style.height = "0"
+                  ripple.style.borderRadius = "50%"
+                  ripple.style.background = "radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)"
+                  ripple.style.animation = "statRipple 1s ease-out"
+                  ripple.style.pointerEvents = "none"
+                  ripple.style.zIndex = "1"
+                  e.currentTarget.appendChild(ripple)
+                  setTimeout(() => {
+                    if (ripple.parentNode) {
+                      ripple.parentNode.removeChild(ripple)
+                    }
+                  }, 1000)
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)"
-                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"
-                  e.currentTarget.style.boxShadow = "none"
-
-                  // Remove water effect
-                  const waterEffect = e.currentTarget.querySelector('div[style*="waterWaveEffect"]')
-                  if (waterEffect) {
-                    waterEffect.remove()
-                  }
+                  e.currentTarget.style.transform = "translateY(0) scale(1)"
+                  e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.1)"
                 }}
               >
                 <div
                   style={{
                     fontSize: "3rem",
                     marginBottom: "20px",
-                    textAlign: "center",
+                    animation: `iconBounce ${2 + index * 0.3}s ease-in-out infinite`,
                   }}
                 >
-                  {service.icon}
+                  {stat.icon}
+                </div>
+                <div
+                  style={{
+                    fontSize: "2.5rem",
+                    fontWeight: "800",
+                    color: "#3b82f6",
+                    marginBottom: "10px",
+                    textShadow: "0 2px 4px rgba(59,130,246,0.3)",
+                  }}
+                >
+                  {stat.number}
+                  {stat.suffix}
                 </div>
                 <h3
                   style={{
-                    fontSize: "1.3rem", // Professional size
+                    fontSize: "1.2rem",
                     fontWeight: "700",
-                    marginBottom: "15px",
-                    color: "rgba(96,165,250,0.9)", // Transparent water color
-                    textAlign: "center",
+                    color: "#1e293b",
+                    marginBottom: "10px",
                   }}
                 >
-                  {service.title}
+                  {stat.title}
                 </h3>
                 <p
                   style={{
-                    fontSize: "0.95rem", // Professional size
-                    lineHeight: "1.6",
-                    color: "rgba(203,213,225,0.8)", // Transparent water color
-                    marginBottom: "20px",
-                    textAlign: "center",
+                    fontSize: "0.9rem",
+                    color: "#64748b",
+                    lineHeight: "1.5",
                   }}
                 >
-                  {service.description}
+                  {stat.description}
                 </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {service.features.map((feature, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        fontSize: "0.85rem", // Professional size
-                        color: "rgba(226,232,240,0.8)", // Transparent water color
-                      }}
-                    >
-                      {feature}
-                    </div>
-                  ))}
-                </div>
               </div>
             ))}
-          </div>
-
-          {/* What We Offer Highlights */}
-          <div
-            style={{
-              marginTop: "80px",
-              textAlign: "center",
-              backgroundColor: "rgba(59,130,246,0.1)",
-              borderRadius: "20px",
-              padding: "50px",
-              border: "1px solid rgba(59,130,246,0.2)",
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "1.5rem", // Professional size
-                fontWeight: "700",
-                marginBottom: "30px",
-                color: "rgba(96,165,250,0.9)", // Transparent water color
-              }}
-            >
-              Why We're Different
-            </h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "30px",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              {[
-                { icon: "🏊", text: "Skilled Professionals: Surax in water feature design & construction" },
-                { icon: "🎯", text: "Custom & Affordable Designs: Tailored to your budget and style" },
-                { icon: "⚡", text: "Reliable & Efficient Service: On-time delivery and responsive support" },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "15px",
-                    padding: "20px",
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <div style={{ fontSize: "2.5rem" }}>{item.icon}</div>
-                  <p
-                    style={{
-                      fontSize: "0.95rem", // Professional size
-                      color: "rgba(203,213,225,0.8)", // Transparent water color
-                      textAlign: "center",
-                      lineHeight: "1.6",
-                    }}
-                  >
-                    {item.text}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Projects Section */}
+      {/* Enhanced Projects Section */}
       <section
         id="projects"
         style={{
-          padding: "100px 0", // Remove horizontal padding for full width
+          padding: "100px 0",
           background: "linear-gradient(135deg, #f1f5f9 0%, #ffffff 100%)",
           position: "relative",
           overflow: "hidden",
-          width: "100%", // Changed from 100vw
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
         <div
           style={{
-            maxWidth: "1400px", // Increased max width for full screen
+            maxWidth: "1400px",
             margin: "0 auto",
             position: "relative",
             zIndex: 2,
             width: "100%",
             boxSizing: "border-box",
-            padding: "0 40px", // Add padding back for content
+            padding: "0 40px",
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "80px" }}>
             <h2
               style={{
-                fontSize: "2.5rem", // Professional size
+                fontSize: "2.5rem",
                 fontWeight: "800",
-                color: "rgba(30,41,59,0.9)", // Transparent water color
+                color: "rgba(30,41,59,0.9)",
                 marginBottom: "20px",
                 animation: "waterColorFlow 10s ease-in-out infinite",
                 background: "linear-gradient(45deg, rgba(30,41,59,0.9) 0%, rgba(59,130,246,0.8) 100%)",
@@ -1153,7 +1412,7 @@ function Home() {
                 backgroundClip: "text",
               }}
             >
-              Our Projects
+              Our Completed Projects
             </h2>
             <div
               style={{
@@ -1166,76 +1425,375 @@ function Home() {
             />
             <p
               style={{
-                fontSize: "1.1rem", // Professional size
-                color: "rgba(100,116,139,0.8)", // Transparent water color
+                fontSize: "1.1rem",
+                color: "rgba(100,116,139,0.8)",
                 marginTop: "20px",
+                maxWidth: "700px",
+                margin: "20px auto 0",
               }}
             >
-              Showcasing Our Excellence in Water Feature Construction
+              Showcasing Our Excellence in Water Feature Construction - From Swimming Pools to Luxury Aquariums
             </p>
           </div>
+
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-              gap: "40px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "20px",
               width: "100%",
               boxSizing: "border-box",
+              marginBottom: "60px",
             }}
           >
             {mediaData.map((project, index) => (
               <div
                 key={index}
                 style={{
-                  borderRadius: "20px",
+                  borderRadius: "15px",
                   overflow: "hidden",
-                  boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
                   transition: "all 0.4s ease",
                   cursor: "pointer",
-                  backgroundColor: "white",
                   width: "100%",
+                  height: "250px",
                   boxSizing: "border-box",
+                  animation: `projectFloat ${4 + index * 0.5}s ease-in-out infinite`,
+                }}
+                onClick={() => {
+                  // Create modal for large image display
+                  const modal = document.createElement("div")
+                  modal.style.position = "fixed"
+                  modal.style.top = "0"
+                  modal.style.left = "0"
+                  modal.style.width = "100%"
+                  modal.style.height = "100%"
+                  modal.style.backgroundColor = "rgba(0,0,0,0.9)"
+                  modal.style.display = "flex"
+                  modal.style.alignItems = "center"
+                  modal.style.justifyContent = "center"
+                  modal.style.zIndex = "1000"
+                  modal.style.cursor = "pointer"
+
+                  const img = document.createElement("img")
+                  img.src = project.image
+                  img.style.maxWidth = "90%"
+                  img.style.maxHeight = "90%"
+                  img.style.objectFit = "contain"
+                  img.style.borderRadius = "10px"
+
+                  modal.appendChild(img)
+                  modal.onclick = () => document.body.removeChild(modal)
+                  document.body.appendChild(modal)
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = "translateY(-15px)"
-                  e.currentTarget.style.boxShadow = "0 20px 60px rgba(59,130,246,0.15)"
+                  e.currentTarget.style.transform = "scale(1.05)"
+                  e.currentTarget.style.boxShadow = "0 20px 40px rgba(59,130,246,0.2)"
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)"
-                  e.currentTarget.style.boxShadow = "0 10px 40px rgba(0,0,0,0.1)"
+                  e.currentTarget.style.transform = "scale(1)"
+                  e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.1)"
                 }}
               >
-                <div
+                <img
+                  src={project.image || "/placeholder.svg"}
+                  alt={project.label}
                   style={{
-                    height: "250px",
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.1)), url(${project.image})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    position: "relative",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
                   }}
                 />
-                <div style={{ padding: "30px" }}>
-                  <h3
+              </div>
+            ))}
+          </div>
+
+          {/* More Projects Button */}
+          <div style={{ textAlign: "center" }}>
+            <button
+              onClick={() => {
+                document.getElementById("testimonials").scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+              }}
+              style={{
+                background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #60a5fa 100%)",
+                backgroundSize: "200% 200%",
+                color: "white",
+                padding: "15px 35px",
+                borderRadius: "50px",
+                border: "none",
+                fontSize: "1rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "0 8px 25px rgba(59,130,246,0.3)",
+                position: "relative",
+                overflow: "hidden",
+                animation: "buttonFloat 3s ease-in-out infinite, waterGradientFlow 4s ease-in-out infinite",
+                textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                letterSpacing: "0.5px",
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = "translateY(-5px) scale(1.05)"
+                e.target.style.boxShadow = "0 15px 40px rgba(59,130,246,0.5)"
+                e.target.style.backgroundPosition = "100% 0%"
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = "translateY(0) scale(1)"
+                e.target.style.boxShadow = "0 8px 25px rgba(59,130,246,0.3)"
+                e.target.style.backgroundPosition = "0% 0%"
+              }}
+            >
+              <span
+                style={{
+                  position: "relative",
+                  zIndex: "3",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ animation: "discoverIcon 2s ease-in-out infinite" }}>🏗️</span>
+                More Projects
+                <span style={{ animation: "arrowFloat 2s ease-in-out infinite" }}>→</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section
+        id="testimonials"
+        style={{
+          padding: "100px 0",
+          background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
+          color: "white",
+          position: "relative",
+          overflow: "hidden",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Background Water Effect */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "radial-gradient(circle at 30% 40%, rgba(59,130,246,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(59,130,246,0.1) 0%, transparent 50%)",
+            animation: "waterFlow 25s ease-in-out infinite reverse",
+          }}
+        />
+
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            position: "relative",
+            zIndex: 2,
+            width: "100%",
+            boxSizing: "border-box",
+            padding: "0 40px",
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: "80px" }}>
+            <h2
+              style={{
+                fontSize: "2.5rem",
+                fontWeight: "800",
+                color: "rgba(255,255,255,0.9)",
+                marginBottom: "20px",
+                textShadow: "0 0 30px rgba(59,130,246,0.3)",
+                animation: "waterColorFlow 8s ease-in-out infinite",
+                background:
+                  "linear-gradient(45deg, rgba(96,165,250,0.9), rgba(59,130,246,0.9), rgba(30,64,175,0.9), rgba(96,165,250,0.9))",
+                backgroundSize: "300% 300%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              What Our Customers Say
+            </h2>
+            <div
+              style={{
+                width: "100px",
+                height: "4px",
+                background: "linear-gradient(90deg, #60a5fa, #3b82f6)",
+                margin: "0 auto",
+                borderRadius: "2px",
+              }}
+            />
+            <p
+              style={{
+                fontSize: "1.1rem",
+                color: "rgba(203,213,225,0.8)",
+                marginTop: "20px",
+                maxWidth: "600px",
+                margin: "20px auto 0",
+              }}
+            >
+              💬 Real Stories from Real Customers - Experience Excellence
+            </p>
+          </div>
+
+          {/* Testimonial Carousel */}
+          <div
+            style={{
+              position: "relative",
+              maxWidth: "800px",
+              margin: "0 auto",
+              height: "300px",
+              overflow: "hidden",
+            }}
+          >
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  opacity: index === currentTestimonial ? 1 : 0,
+                  transform:
+                    index === currentTestimonial
+                      ? "translateX(0)"
+                      : index < currentTestimonial
+                        ? "translateX(-100%)"
+                        : "translateX(100%)",
+                  transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  padding: "40px",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "20px",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  animation: index === currentTestimonial ? "testimonialFloat 6s ease-in-out infinite" : "none",
+                }}
+              >
+                {/* Customer Image */}
+                <div
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    borderRadius: "50%",
+                    backgroundColor: "#3b82f6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "25px",
+                    fontSize: "3rem",
+                    animation: "customerImageFloat 4s ease-in-out infinite",
+                    boxShadow: "0 15px 40px rgba(59,130,246,0.4)",
+                    backgroundImage: `url(${testimonial.image})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    border: "4px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  {!testimonial.image.includes("placeholder") ? "" : "👤"}
+                </div>
+
+                {/* Stars */}
+                <div style={{ marginBottom: "20px" }}>
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        color: "#fbbf24",
+                        fontSize: "1.5rem",
+                        marginRight: "5px",
+                        animation: `starTwinkle ${1 + i * 0.2}s ease-in-out infinite`,
+                      }}
+                    >
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+
+                {/* Testimonial Text */}
+                <p
+                  style={{
+                    fontSize: "1.1rem",
+                    lineHeight: "1.6",
+                    color: "rgba(255,255,255,0.9)",
+                    marginBottom: "25px",
+                    fontStyle: "italic",
+                    maxWidth: "600px",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  "{testimonial.text}"
+                </p>
+
+                {/* Customer Info */}
+                <div>
+                  <h4
                     style={{
-                      fontSize: "1.2rem", // Professional size
+                      fontSize: "1.2rem",
                       fontWeight: "700",
-                      color: "rgba(30,41,59,0.9)", // Transparent water color
-                      marginBottom: "15px",
+                      color: "#60a5fa",
+                      marginBottom: "5px",
                     }}
                   >
-                    {project.label}
-                  </h3>
+                    {testimonial.name}
+                  </h4>
                   <p
                     style={{
-                      fontSize: "0.95rem", // Professional size
-                      color: "rgba(100,116,139,0.8)", // Transparent water color
-                      lineHeight: "1.6",
+                      fontSize: "0.9rem",
+                      color: "rgba(203,213,225,0.8)",
                     }}
                   >
-                    {project.description}
+                    {testimonial.role}
                   </p>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Testimonial Indicators */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "10px",
+              marginTop: "40px",
+            }}
+          >
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentTestimonial(index)}
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  borderRadius: "50%",
+                  backgroundColor: index === currentTestimonial ? "#3b82f6" : "rgba(255,255,255,0.3)",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: index === currentTestimonial ? "0 0 20px rgba(59,130,246,0.8)" : "none",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = "scale(1.3)"
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = "scale(1)"
+                }}
+              />
             ))}
           </div>
         </div>
@@ -1245,12 +1803,12 @@ function Home() {
       <section
         id="contact"
         style={{
-          padding: "100px 0", // Remove horizontal padding for full width
+          padding: "100px 0",
           background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
           color: "white",
           position: "relative",
           overflow: "hidden",
-          width: "100%", // Changed from 100vw
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
@@ -1269,21 +1827,21 @@ function Home() {
         />
         <div
           style={{
-            maxWidth: "1400px", // Increased max width for full screen
+            maxWidth: "1400px",
             margin: "0 auto",
             position: "relative",
             zIndex: 2,
             width: "100%",
             boxSizing: "border-box",
-            padding: "0 40px", // Add padding back for content
+            padding: "0 40px",
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "80px" }}>
             <h2
               style={{
-                fontSize: "2.5rem", // Professional size
+                fontSize: "2.5rem",
                 fontWeight: "800",
-                color: "rgba(255,255,255,0.9)", // Transparent water color
+                color: "rgba(255,255,255,0.9)",
                 marginBottom: "20px",
                 textShadow: "0 0 30px rgba(255,255,255,0.3)",
                 animation: "waterColorFlow 12s ease-in-out infinite",
@@ -1308,8 +1866,8 @@ function Home() {
             />
             <p
               style={{
-                fontSize: "1.1rem", // Professional size
-                color: "rgba(255,255,255,0.8)", // Transparent water color
+                fontSize: "1.1rem",
+                color: "rgba(255,255,255,0.8)",
                 marginTop: "20px",
               }}
             >
@@ -1321,19 +1879,19 @@ function Home() {
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "80px",
-              alignItems: "center",
+              alignItems: "flex-start",
               width: "100%",
               boxSizing: "border-box",
             }}
           >
-            {/* Left - Contact Info with Transparent Background and Pop Animation */}
+            {/* Left - Contact Info */}
             <div>
               <h3
                 style={{
-                  fontSize: "1.5rem", // Professional size
+                  fontSize: "1.5rem",
                   fontWeight: "700",
                   marginBottom: "30px",
-                  color: "rgba(255,255,255,0.9)", // Transparent water color
+                  color: "rgba(255,255,255,0.9)",
                 }}
               >
                 Get In Touch
@@ -1341,43 +1899,62 @@ function Home() {
               <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
                 {[
                   {
-                    icon: <MapPin style={{ width: "20px", height: "20px" }} />,
+                    icon: "📍",
                     title: "Location",
-                    info: "Addis Ababa, Ethiopia",
+                    info: "Addis Ababa, Ethiopia\nBole Sub City, Woreda 03",
                   },
                   {
-                    icon: <Phone style={{ width: "20px", height: "20px" }} />,
+                    icon: "📞",
                     title: "Phone",
-                    info: "+251-947085168",
+                    info: "+251-947085168\n+251-928994480",
+                    isClickable: true,
+                    clickAction: () => window.open("tel:+251947085168"),
                   },
                   {
-                    icon: <Clock style={{ width: "20px", height: "20px" }} />,
+                    icon: "✉️",
+                    title: "Email",
+                    info: "abiy1691@gmail.com\nsales@suraxpool.com",
+                    isClickable: true,
+                    clickAction: () => window.open("mailto:abiy1691@gmail.com"),
+                  },
+                  {
+                    icon: "🕒",
                     title: "Working Hours",
-                    info: showWorkingHours ? "Mon - Sat: 8:00 - 17:30" : "Sunday: CLOSED",
-                    isAnimated: true,
+                    info: "Mon - Sat: 8:00 - 17:30\nSunday: Closed",
                   },
                 ].map((contact, index) => (
                   <div
                     key={index}
                     style={{
-                      display: showContactInfo ? "flex" : "none", // Pop up/disappear effect
+                      display: "flex",
                       alignItems: "flex-start",
                       gap: "20px",
                       padding: "20px",
-                      backgroundColor: "rgba(255,255,255,0.05)", // More transparent
+                      backgroundColor: "rgba(255,255,255,0.05)",
                       borderRadius: "15px",
-                      border: "1px solid rgba(255,255,255,0.1)", // More transparent
-                      animation: showContactInfo ? "contactPop 0.5s ease-out" : "contactFade 0.5s ease-in",
+                      border: "1px solid rgba(255,255,255,0.1)",
                       backdropFilter: "blur(10px)",
                       transition: "all 0.3s ease",
+                      cursor: contact.isClickable ? "pointer" : "default",
+                    }}
+                    onClick={contact.isClickable ? contact.clickAction : null}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(59,130,246,0.1)"
+                      e.currentTarget.style.transform = "translateY(-3px)"
+                      e.currentTarget.style.boxShadow = "0 10px 25px rgba(59,130,246,0.2)"
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"
+                      e.currentTarget.style.transform = "translateY(0)"
+                      e.currentTarget.style.boxShadow = "none"
                     }}
                   >
                     <div
                       style={{
-                        color: "rgba(96,165,250,0.9)", // Transparent water color
-                        backgroundColor: "rgba(255,255,255,0.05)", // More transparent
-                        padding: "10px",
-                        borderRadius: "10px",
+                        fontSize: "1.5rem",
+                        backgroundColor: "rgba(96,165,250,0.1)",
+                        padding: "8px",
+                        borderRadius: "8px",
                       }}
                     >
                       {contact.icon}
@@ -1385,23 +1962,21 @@ function Home() {
                     <div>
                       <h4
                         style={{
-                          fontSize: "1rem", // Professional size
+                          fontSize: "1rem",
                           fontWeight: "600",
                           marginBottom: "5px",
-                          color: "rgba(96,165,250,0.9)", // Transparent water color
+                          color: "#60a5fa",
                         }}
                       >
                         {contact.title}
                       </h4>
                       <p
                         style={{
-                          fontSize: "0.95rem", // Professional size
-                          color: "rgba(255,255,255,0.8)", // Transparent water color
-                          lineHeight: "1.5",
+                          fontSize: "0.85rem",
+                          color: "rgba(203,213,225,0.8)",
+                          lineHeight: "1.4",
                           whiteSpace: "pre-line",
-                          animation: contact.isAnimated ? "workingHoursPop 2s ease-in-out infinite" : "none",
-                          transform: contact.isAnimated && showWorkingHours ? "scale(1.05)" : "scale(1)",
-                          transition: "all 0.3s ease",
+                          margin: 0,
                         }}
                       >
                         {contact.info}
@@ -1410,15 +1985,14 @@ function Home() {
                   </div>
                 ))}
               </div>
-
               {/* Social Media */}
               <div style={{ marginTop: "40px" }}>
                 <h4
                   style={{
-                    fontSize: "1.1rem", // Professional size
+                    fontSize: "1.1rem",
                     fontWeight: "600",
                     marginBottom: "20px",
-                    color: "rgba(255,255,255,0.9)", // Transparent water color
+                    color: "rgba(255,255,255,0.9)",
                   }}
                 >
                   Follow Us
@@ -1426,7 +2000,6 @@ function Home() {
                 <div style={{ display: "flex", gap: "15px" }}>
                   {[
                     { Icon: Facebook, bg: "#1877f2", name: "Facebook" },
-                    { Icon: Twitter, bg: "#1da1f2", name: "Twitter" },
                     { Icon: Instagram, bg: "#e4405f", name: "Instagram" },
                     { Icon: Linkedin, bg: "#0077b5", name: "LinkedIn" },
                   ].map(({ Icon, bg, name }, index) => (
@@ -1455,98 +2028,240 @@ function Home() {
                       <Icon style={{ width: "18px", height: "18px", color: "white" }} />
                     </a>
                   ))}
+                  {/* X (Twitter) Icon */}
+                  <a
+                    href="#"
+                    title="X (Twitter)"
+                    style={{
+                      backgroundColor: "#000000",
+                      padding: "12px",
+                      borderRadius: "10px",
+                      transition: "all 0.3s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      color: "white",
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.transform = "scale(1.1) rotate(5deg)"
+                      e.target.style.boxShadow = "0 10px 30px rgba(0,0,0,0.3)"
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.transform = "scale(1) rotate(0deg)"
+                      e.target.style.boxShadow = "none"
+                    }}
+                  >
+                    𝕏
+                  </a>
                 </div>
               </div>
             </div>
-
-            {/* Right - CTA */}
+            {/* Right - Contact Form */}
             <div
               style={{
-                backgroundColor: "rgba(255,255,255,0.05)", // More transparent
+                backgroundColor: "rgba(255,255,255,0.05)",
                 backdropFilter: "blur(10px)",
                 borderRadius: "25px",
                 padding: "50px",
-                border: "1px solid rgba(255,255,255,0.1)", // More transparent
-                textAlign: "center",
+                border: "1px solid rgba(255,255,255,0.1)",
                 width: "100%",
                 boxSizing: "border-box",
               }}
             >
               <h3
                 style={{
-                  fontSize: "1.8rem", // Professional size
+                  fontSize: "1.8rem",
                   fontWeight: "700",
                   marginBottom: "20px",
-                  color: "rgba(255,255,255,0.9)", // Transparent water color
+                  color: "rgba(255,255,255,0.9)",
+                  textAlign: "center",
                 }}
               >
-                Ready to Start?
+                Send us a Message
               </h3>
               <p
                 style={{
-                  fontSize: "1rem", // Professional size
-                  color: "rgba(255,255,255,0.8)", // Transparent water color
+                  fontSize: "1rem",
+                  color: "rgba(255,255,255,0.8)",
                   marginBottom: "30px",
                   lineHeight: "1.6",
+                  textAlign: "center",
                 }}
               >
-                Transform your space with our surax swimming pool, jacuzzi, fountain, and aquarium construction
-                services. Contact us today for a free consultation!
+                Ready to start your project? Fill out the form below and we'll get back to you soon!
               </p>
-              <button
-                style={{
-                  backgroundColor: "#f97316",
-                  color: "white",
-                  padding: "15px 40px",
-                  borderRadius: "50px",
-                  border: "none",
-                  fontSize: "1rem", // Professional size
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 10px 30px rgba(249,115,22,0.3)",
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = "#ea580c"
-                  e.target.style.transform = "translateY(-3px)"
-                  e.target.style.boxShadow = "0 15px 40px rgba(249,115,22,0.4)"
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = "#f97316"
-                  e.target.style.transform = "translateY(0)"
-                  e.target.style.boxShadow = "0 10px 30px rgba(249,115,22,0.3)"
-                }}
-              >
-                Get Free Quote
-              </button>
+              <form onSubmit={handleContactSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Your Name"
+                    value={contactForm.name}
+                    onChange={handleInputChange}
+                    required
+                    style={{
+                      padding: "15px",
+                      borderRadius: "10px",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      color: "white",
+                      fontSize: "1rem",
+                      outline: "none",
+                      transition: "all 0.3s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#60a5fa"
+                      e.target.style.boxShadow = "0 0 20px rgba(96,165,250,0.3)"
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "rgba(255,255,255,0.2)"
+                      e.target.style.boxShadow = "none"
+                    }}
+                  />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Your Email"
+                    value={contactForm.email}
+                    onChange={handleInputChange}
+                    required
+                    style={{
+                      padding: "15px",
+                      borderRadius: "10px",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      color: "white",
+                      fontSize: "1rem",
+                      outline: "none",
+                      transition: "all 0.3s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#60a5fa"
+                      e.target.style.boxShadow = "0 0 20px rgba(96,165,250,0.3)"
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "rgba(255,255,255,0.2)"
+                      e.target.style.boxShadow = "none"
+                    }}
+                  />
+                </div>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Your Phone Number"
+                  value={contactForm.phone}
+                  onChange={handleInputChange}
+                  style={{
+                    padding: "15px",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    color: "white",
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "all 0.3s ease",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#60a5fa"
+                    e.target.style.boxShadow = "0 0 20px rgba(96,165,250,0.3)"
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "rgba(255,255,255,0.2)"
+                    e.target.style.boxShadow = "none"
+                  }}
+                />
+                <textarea
+                  name="message"
+                  placeholder="Your Message"
+                  value={contactForm.message}
+                  onChange={handleInputChange}
+                  required
+                  rows={5}
+                  style={{
+                    padding: "15px",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    color: "white",
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "all 0.3s ease",
+                    resize: "vertical",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#60a5fa"
+                    e.target.style.boxShadow = "0 0 20px rgba(96,165,250,0.3)"
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "rgba(255,255,255,0.2)"
+                    e.target.style.boxShadow = "none"
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    backgroundColor: "#f97316",
+                    color: "white",
+                    padding: "15px 40px",
+                    borderRadius: "50px",
+                    border: "none",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
+                    transition: "all 0.3s ease",
+                    boxShadow: "0 10px 30px rgba(249,115,22,0.3)",
+                    opacity: isSubmitting ? 0.7 : 1,
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isSubmitting) {
+                      e.target.style.backgroundColor = "#ea580c"
+                      e.target.style.transform = "translateY(-3px)"
+                      e.target.style.boxShadow = "0 15px 40px rgba(249,115,22,0.4)"
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isSubmitting) {
+                      e.target.style.backgroundColor = "#f97316"
+                      e.target.style.transform = "translateY(0)"
+                      e.target.style.boxShadow = "0 10px 30px rgba(249,115,22,0.3)"
+                    }
+                  }}
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </button>
+              </form>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Combined Contact Pop-up - Small and Transparent */}
+      {/* Combined Contact Pop-up */}
       {showContactInfo && (
         <div
           style={{
             position: "fixed",
-            top: "70px", // Below navbar
+            top: "70px",
             right: "15px",
             zIndex: 45,
-            backgroundColor: "rgba(59,130,246,0.15)", // Much more transparent
-            backdropFilter: "blur(5px)", // Reduced blur
+            backgroundColor: "rgba(59,130,246,0.15)",
+            backdropFilter: "blur(5px)",
             color: "white",
-            padding: "8px 12px", // Much smaller padding
-            borderRadius: "8px", // Smaller border radius
-            border: "1px solid rgba(255,255,255,0.1)", // Very subtle border
-            boxShadow: "0 2px 8px rgba(59,130,246,0.1)", // Very subtle shadow
+            padding: "8px 12px",
+            borderRadius: "8px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 2px 8px rgba(59,130,246,0.1)",
             animation: "contactPop 0.5s ease-out",
             cursor: "pointer",
             transition: "all 0.3s ease",
-            minWidth: "140px", // Much smaller width
-            fontSize: "0.7rem", // Smaller font
+            minWidth: "140px",
+            fontSize: "0.7rem",
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(59,130,246,0.25)" // Slightly less transparent on hover
+            e.currentTarget.style.backgroundColor = "rgba(59,130,246,0.25)"
             e.currentTarget.style.boxShadow = "0 3px 12px rgba(59,130,246,0.2)"
           }}
           onMouseOut={(e) => {
@@ -1555,18 +2270,25 @@ function Home() {
           }}
         >
           {/* Phone Section */}
-          <div style={{ marginBottom: "6px" }}>
+          <div
+            style={{ marginBottom: "6px", cursor: "pointer" }}
+            onClick={() => {
+              document.querySelector("footer").scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              })
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
-              <Phone style={{ width: "10px", height: "10px", color: "#ffffff" }} />
+              <span style={{ fontSize: "10px" }}>📞</span>
               <span style={{ fontSize: "0.6rem", fontWeight: "500" }}>Call</span>
             </div>
             <div style={{ fontSize: "0.7rem", fontWeight: "600", paddingLeft: "14px" }}>+251-947085168</div>
           </div>
-
           {/* Working Hours Section */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
-              <Clock style={{ width: "10px", height: "10px", color: "#ffffff" }} />
+              <span style={{ fontSize: "10px" }}>🕒</span>
               <span style={{ fontSize: "0.6rem", fontWeight: "500" }}>Hours</span>
             </div>
             <div style={{ paddingLeft: "14px" }}>
@@ -1576,6 +2298,9 @@ function Home() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <Footer />
 
       {/* Enhanced CSS animations */}
       <style jsx>{`
@@ -1587,7 +2312,6 @@ function Home() {
             transform: translateY(-5px) rotate(10deg);
           }
         }
-
         @keyframes waveAnimation {
           0%, 100% {
             transform: scale(1) rotate(0deg);
@@ -1596,7 +2320,6 @@ function Home() {
             transform: scale(1.2) rotate(15deg);
           }
         }
-
         @keyframes dropAnimation {
           0%, 100% {
             transform: translateY(0px) scale(1);
@@ -1605,7 +2328,6 @@ function Home() {
             transform: translateY(-3px) scale(1.1);
           }
         }
-
         @keyframes titleFloat {
           0%, 100% {
             transform: translateY(0px);
@@ -1614,7 +2336,6 @@ function Home() {
             transform: translateY(-5px);
           }
         }
-
         @keyframes titleGlow {
           0%, 100% {
             text-shadow: 0 0 10px rgba(59,130,246,0.3);
@@ -1623,32 +2344,15 @@ function Home() {
             text-shadow: 0 0 20px rgba(59,130,246,0.6);
           }
         }
-
-        @keyframes cardFloat {
+        @keyframes waterFloat {
           0%, 100% {
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-2px);
+            transform: translateY(-8px);
           }
         }
-
-        @keyframes waterRippleCard {
-          0% {
-            transform: scale(0);
-            opacity: 0.8;
-          }
-          50% {
-            transform: scale(1.5);
-            opacity: 0.4;
-          }
-          100% {
-            transform: scale(2.5);
-            opacity: 0;
-          }
-        }
-
-        @keyframes waterWaveEffect {
+        @keyframes waterRippleService {
           0%, 100% {
             opacity: 0.1;
             transform: scale(1);
@@ -1658,7 +2362,68 @@ function Home() {
             transform: scale(1.1);
           }
         }
-
+        @keyframes statFloat {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+        @keyframes statRipple {
+          0% {
+            width: 0;
+            height: 0;
+            opacity: 0.8;
+          }
+          100% {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+          }
+        }
+        @keyframes iconBounce {
+          0%, 100% {
+            transform: translateY(0px) scale(1);
+          }
+          50% {
+            transform: translateY(-5px) scale(1.1);
+          }
+        }
+        @keyframes projectFloat {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-3px);
+          }
+        }
+        @keyframes testimonialFloat {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+        @keyframes customerImageFloat {
+          0%, 100% {
+            transform: translateY(0px) scale(1);
+          }
+          50% {
+            transform: translateY(-3px) scale(1.05);
+          }
+        }
+        @keyframes starTwinkle {
+          0%, 100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.2) rotate(180deg);
+            opacity: 0.8;
+          }
+        }
         @keyframes contactPop {
           0% {
             opacity: 0;
@@ -1669,18 +2434,6 @@ function Home() {
             transform: scale(1) translateY(0);
           }
         }
-
-        @keyframes contactFade {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.8) translateY(-20px);
-          }
-        }
-
         @keyframes socialSlideIn {
           0% {
              opacity: 0;
@@ -1691,7 +2444,6 @@ function Home() {
              transform: translateY(-50%) translateX(0);
            }
         }
-                
         @keyframes socialFadeIn {
           0% {
              opacity: 0;
@@ -1702,17 +2454,14 @@ function Home() {
              transform: translateX(0) scale(1);
            }
         }
-                
         @keyframes slideInLeft {
           0% { opacity: 0; transform: translateY(-50%) translateX(-30px); }
           100% { opacity: 1; transform: translateY(-50%) translateX(0); }
         }
-                
         @keyframes slideInRight {
           0% { opacity: 0; transform: translateY(-50%) translateX(30px); }
           100% { opacity: 1; transform: translateY(-50%) translateX(0); }
         }
-                
         @keyframes textSlideIn {
           0% {
              opacity: 0;
@@ -1730,7 +2479,6 @@ function Home() {
              filter: blur(0px);
           }
         }
-                
         @keyframes textSlideOut {
           0% {
              opacity: 1;
@@ -1743,7 +2491,6 @@ function Home() {
              filter: blur(8px);
           }
         }
-                
         @keyframes textFadeIn {
           0% {
              opacity: 0;
@@ -1756,7 +2503,6 @@ function Home() {
              filter: blur(0px);
           }
         }
-                
         @keyframes textFadeOut {
           0% {
              opacity: 1;
@@ -1769,7 +2515,6 @@ function Home() {
              filter: blur(6px);
           }
         }
-                
         @keyframes waterColorFlow {
           0% {
             background-position: 0% 50%;
@@ -1781,7 +2526,6 @@ function Home() {
             background-position: 0% 50%;
           }
         }
-                
         @keyframes waterFill {
           0% {
              transform: translateY(100%);
@@ -1796,7 +2540,6 @@ function Home() {
              opacity: 1;
           }
         }
-                
         @keyframes waterWave {
           0%, 100% {
              background: linear-gradient(0deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
@@ -1805,7 +2548,6 @@ function Home() {
              background: linear-gradient(0deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
           }
         }
-                
         @keyframes waterRipple {
           0% {
              transform: translate(-50%, -50%) scale(1);
@@ -1820,7 +2562,6 @@ function Home() {
              opacity: 0;
           }
         }
-                
         @keyframes waterFlow {
           0%, 100% {
              transform: translateX(0) translateY(0) scale(1);
@@ -1839,18 +2580,6 @@ function Home() {
             opacity: 0.8;
           }
         }
-
-        @keyframes workingHoursPop {
-          0%, 100% {
-            transform: scale(1);
-            color: rgba(255,255,255,0.8);
-          }
-          50% {
-            transform: scale(1.05);
-            color: rgba(96,165,250,0.9);
-          }
-        }
-
         @keyframes waterLineFlow {
           0% {
             width: 0%;
@@ -1865,7 +2594,6 @@ function Home() {
             opacity: 0;
           }
         }
-
         @keyframes textFloat {
           0%, 100% {
             transform: translateY(0px);
@@ -1874,7 +2602,6 @@ function Home() {
             transform: translateY(-2px);
           }
         }
-        
         @keyframes pulseGlow {
           0%, 100% {
             box-shadow: 0 0 20px rgba(255,255,255,0.2);
@@ -1885,121 +2612,6 @@ function Home() {
             transform: scale(1.05);
           }
         }
-
-        @keyframes shimmer {
-          0%, 100% {
-            opacity: 0.7;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-
-        @keyframes phonePopUp {
-          0%, 100% {
-            transform: translateY(0px) scale(1);
-            box-shadow: 0 10px 30px rgba(59,130,246,0.3);
-          }
-          50% {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(59,130,246,0.5);
-          }
-        }
-
-        @keyframes hoursPopUp {
-          0%, 100% {
-            transform: translateY(0px) scale(1);
-            box-shadow: 0 10px 30px rgba(249,115,22,0.3);
-          }
-          50% {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(249,115,22,0.5);
-          }
-        }
-
-        @keyframes contactPopupSlideIn {
-          0% {
-            opacity: 0;
-            transform: translateX(30px) scale(0.9);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-        }
-
-        @keyframes waterGlow {
-          0%, 100% {
-            box-shadow: 0 15px 40px rgba(59,130,246,0.4), 0 0 30px rgba(59,130,246,0.2);
-          }
-          50% {
-            box-shadow: 0 20px 50px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.4);
-          }
-        }
-
-        @keyframes waterRippleContact {
-          0% {
-            transform: scale(0);
-            opacity: 0.8;
-          }
-          50% {
-            transform: scale(1.5);
-            opacity: 0.4;
-          }
-          100% {
-            transform: scale(2.5);
-            opacity: 0;
-          }
-        }
-
-        @keyframes waterFlowContact {
-          0%, 100% {
-            transform: translateX(0) translateY(0) scale(1);
-            opacity: 0.3;
-          }
-          25% {
-            transform: translateX(10px) translateY(-5px) scale(1.05);
-            opacity: 0.5;
-          }
-          50% {
-            transform: translateX(-5px) translateY(10px) scale(0.95);
-            opacity: 0.4;
-          }
-          75% {
-            transform: translateX(-10px) translateY(-3px) scale(1.02);
-            opacity: 0.6;
-          }
-        }
-
-        @keyframes phoneFloat {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-3px) rotate(5deg);
-          }
-        }
-
-        @keyframes clockFloat {
-          0%, 100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-2px) rotate(-5deg);
-          }
-        }
-
-        @keyframes waterSplash {
-          0%, 100% {
-            opacity: 0.3;
-            transform: translateX(-50%) scale(1);
-          }
-          50% {
-            opacity: 0.6;
-            transform: translateX(-50%) scale(1.2);
-          }
-        }
-
         @keyframes buttonFloat {
           0%, 100% {
             transform: translateY(0px);
@@ -2008,7 +2620,6 @@ function Home() {
             transform: translateY(-3px);
           }
         }
-
         @keyframes waterGradientFlow {
           0% {
             background-position: 0% 50%;
@@ -2020,44 +2631,6 @@ function Home() {
             background-position: 0% 50%;
           }
         }
-
-        @keyframes buttonRipple {
-          0% {
-            width: 0;
-            height: 0;
-            opacity: 1;
-          }
-          100% {
-            width: 300px;
-            height: 300px;
-            opacity: 0;
-          }
-        }
-
-        @keyframes buttonSplash {
-          0% {
-            transform: scale(0);
-            opacity: 0.8;
-          }
-          50% {
-            transform: scale(1.2);
-            opacity: 0.4;
-          }
-          100% {
-            transform: scale(1.8);
-            opacity: 0;
-          }
-        }
-
-        @keyframes buttonWaveFlow {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
         @keyframes discoverIcon {
           0%, 100% {
             transform: scale(1) rotate(0deg);
@@ -2066,7 +2639,6 @@ function Home() {
             transform: scale(1.2) rotate(15deg);
           }
         }
-
         @keyframes arrowFloat {
           0%, 100% {
             transform: translateX(0px);
