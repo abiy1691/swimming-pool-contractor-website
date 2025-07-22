@@ -1,5 +1,6 @@
 "use client"
-import { Phone, MapPin, Mail, Clock, Waves } from "lucide-react"
+import { Phone, Waves } from "lucide-react"
+import { FaLinkedin, FaTelegram, FaPhone } from "react-icons/fa6"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -115,15 +116,61 @@ export default function Footer() {
               spaces with professional water feature installations since 2017.
             </p>
 
-            {/* Social Media Links - Only Phone */}
+            {/* Social Media Links */}
             <div style={{ display: "flex", gap: "15px" }}>
               <a
-                href="#"
-                title="Phone"
-                onClick={(e) => {
-                  e.preventDefault()
-                  window.open("tel:+251928994480")
+                href="https://www.linkedin.com/in/abiy-girma-6409401b5/"
+                title="LinkedIn"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  backgroundColor: "#0077b5",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  transition: "all 0.3s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = "scale(1.2) rotate(10deg)"
+                  e.target.style.boxShadow = "0 10px 30px rgba(0,0,0,0.3)"
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = "scale(1) rotate(0deg)"
+                  e.target.style.boxShadow = "none"
+                }}
+              >
+                <FaLinkedin style={{ width: "18px", height: "18px", color: "white" }} />
+              </a>
+              <a
+                href="https://t.me/scripted0"
+                title="Telegram"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  backgroundColor: "#0088cc",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  transition: "all 0.3s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = "scale(1.2) rotate(10deg)"
+                  e.target.style.boxShadow = "0 10px 30px rgba(0,0,0,0.3)"
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = "scale(1) rotate(0deg)"
+                  e.target.style.boxShadow = "none"
+                }}
+              >
+                <FaTelegram style={{ width: "18px", height: "18px", color: "white" }} />
+              </a>
+              <a
+                href="tel:+251928994480"
+                title="Phone"
                 style={{
                   backgroundColor: "#10b981",
                   padding: "12px",
@@ -142,7 +189,7 @@ export default function Footer() {
                   e.target.style.boxShadow = "none"
                 }}
               >
-                <Phone style={{ width: "18px", height: "18px", color: "white" }} />
+                <FaPhone style={{ width: "18px", height: "18px", color: "white" }} />
               </a>
             </div>
           </div>
@@ -202,108 +249,6 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3
-              style={{
-                fontSize: "1.3rem",
-                fontWeight: "700",
-                marginBottom: "25px",
-                color: "#60a5fa",
-              }}
-            >
-              Contact Information
-            </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              {[
-                {
-                  icon: <MapPin style={{ width: "18px", height: "18px" }} />,
-                  title: "Address",
-                  info: "Addis Ababa, Ethiopia\nBole Sub City, Woreda 03",
-                },
-                {
-                  icon: <Phone style={{ width: "18px", height: "18px" }} />,
-                  title: "Phone",
-                  info: "+251-947085168\n+251-928994480",
-                  isClickable: true,
-                  clickAction: () => window.open("tel:+251928994480"),
-                },
-                {
-                  icon: <Mail style={{ width: "18px", height: "18px" }} />,
-                  title: "Email",
-                  info: "abiy1691@gmail.com\nsales@suraxpool.com",
-                  isClickable: true,
-                  clickAction: () => window.open("mailto:abiy1691@gmail.com"),
-                },
-                {
-                  icon: <Clock style={{ width: "18px", height: "18px" }} />,
-                  title: "Working Hours",
-                  info: "Mon - Sat: 8:00 - 17:30\nSunday: Closed",
-                },
-              ].map((contact, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "15px",
-                    padding: "15px",
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    borderRadius: "10px",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    transition: "all 0.3s ease",
-                    cursor: contact.isClickable ? "pointer" : "default",
-                  }}
-                  onClick={contact.clickAction}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(59,130,246,0.1)"
-                    e.currentTarget.style.transform = "translateY(-3px)"
-                    e.currentTarget.style.boxShadow = "0 10px 25px rgba(59,130,246,0.2)"
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"
-                    e.currentTarget.style.transform = "translateY(0)"
-                    e.currentTarget.style.boxShadow = "none"
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#60a5fa",
-                      backgroundColor: "rgba(96,165,250,0.1)",
-                      padding: "8px",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    {contact.icon}
-                  </div>
-                  <div>
-                    <h4
-                      style={{
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        marginBottom: "5px",
-                        color: "#60a5fa",
-                      }}
-                    >
-                      {contact.title}
-                    </h4>
-                    <p
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "rgba(203,213,225,0.8)",
-                        lineHeight: "1.4",
-                        whiteSpace: "pre-line",
-                        margin: 0,
-                      }}
-                    >
-                      {contact.info}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -432,13 +377,15 @@ export default function Footer() {
             <span style={{ fontSize: "0.85rem", color: "rgba(203,213,225,0.6)" }}>
               Designed and developed by{" "}
               <a
-                href="https://github.com/abiy1691" // GitHub link
+                href="https://abiy1691.github.io/portfolio_website/"
                 style={{
                   color: "#60a5fa",
                   textDecoration: "none",
                   fontWeight: "600",
                   transition: "all 0.3s ease",
                 }}
+                target="_blank"
+                rel="noopener noreferrer"
                 onMouseOver={(e) => {
                   e.target.style.color = "#3b82f6"
                   e.target.style.textShadow = "0 0 10px rgba(59,130,246,0.5)"
@@ -450,37 +397,31 @@ export default function Footer() {
               >
                 Abiy Girma
               </a>
-              {/* Small icons next to name */}
+              {/* Social icons next to name */}
               <span style={{ marginLeft: "8px", display: "inline-flex", gap: "4px", alignItems: "center" }}>
                 <a
-                  href="https://github.com/abiy1691"
-                  title="GitHub"
-                  style={{
-                    fontSize: "12px",
-                    color: "#60a5fa",
-                    textDecoration: "none",
-                    transition: "all 0.3s ease",
-                  }}
+                  href="https://www.linkedin.com/in/abiy-girma-6409401b5/"
+                  title="LinkedIn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: "14px", color: "#60a5fa", textDecoration: "none", transition: "all 0.3s ease" }}
                   onMouseOver={(e) => {
                     e.target.style.transform = "scale(1.2)"
-                    e.target.style.color = "#3b82f6"
+                    e.target.style.color = "#0077b5"
                   }}
                   onMouseOut={(e) => {
                     e.target.style.transform = "scale(1)"
                     e.target.style.color = "#60a5fa"
                   }}
                 >
-                  ⚡
+                  <FaLinkedin />
                 </a>
                 <a
-                  href="https://t.me/+251928994480"
+                  href="https://t.me/scripted0"
                   title="Telegram"
-                  style={{
-                    fontSize: "12px",
-                    color: "#60a5fa",
-                    textDecoration: "none",
-                    transition: "all 0.3s ease",
-                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: "14px", color: "#60a5fa", textDecoration: "none", transition: "all 0.3s ease" }}
                   onMouseOver={(e) => {
                     e.target.style.transform = "scale(1.2)"
                     e.target.style.color = "#0088cc"
@@ -490,27 +431,22 @@ export default function Footer() {
                     e.target.style.color = "#60a5fa"
                   }}
                 >
-                  ✈️
+                  <FaTelegram />
                 </a>
                 <a
-                  href="https://wa.me/251928994480"
-                  title="WhatsApp"
-                  style={{
-                    fontSize: "12px",
-                    color: "#60a5fa",
-                    textDecoration: "none",
-                    transition: "all 0.3s ease",
-                  }}
+                  href="tel:+251928994480"
+                  title="Phone"
+                  style={{ fontSize: "14px", color: "#60a5fa", textDecoration: "none", transition: "all 0.3s ease" }}
                   onMouseOver={(e) => {
                     e.target.style.transform = "scale(1.2)"
-                    e.target.style.color = "#25d366"
+                    e.target.style.color = "#10b981"
                   }}
                   onMouseOut={(e) => {
                     e.target.style.transform = "scale(1)"
                     e.target.style.color = "#60a5fa"
                   }}
                 >
-                  📱
+                  <FaPhone />
                 </a>
               </span>
             </span>

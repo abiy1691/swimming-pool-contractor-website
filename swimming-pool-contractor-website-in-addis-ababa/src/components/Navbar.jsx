@@ -1,18 +1,44 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Waves } from "lucide-react"
 
 // Navigation links
 const navLinks = [
-  { name: "Home", href: "#" },
-  { name: "About", href: "#about" },
-  { name: "Services", href: "#services" },
-  { name: "Projects", href: "#projects" },
-  { name: "Contact", href: "#contact" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Services", href: "/services" },
+  { name: "Projects", href: "/projects" },
+  { name: "Contact", href: "/contact" },
 ]
 
 export default function Navbar() {
   const [active, setActive] = useState("Home")
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false) // Hide when scrolling down
+      } else {
+        setIsVisible(true) // Show when scrolling up
+      }
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScrollY])
+
+  // Set active link based on current path
+  useEffect(() => {
+    const currentPath = window.location.pathname
+    const activeLink = navLinks.find((link) => link.href === currentPath || (link.href === "/" && currentPath === "/"))
+    if (activeLink) {
+      setActive(activeLink.name)
+    }
+  }, [])
 
   return (
     <nav
@@ -23,13 +49,19 @@ export default function Navbar() {
         width: "100%",
         backgroundColor: "rgba(255,255,255,0.95)",
         backdropFilter: "blur(8px)",
-        padding: "8px 24px",
+        padding: "6px 24px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
         zIndex: 50,
-        height: "50px",
+        height: "40px",
+        transform: isVisible ? "translateY(0)" : "translateY(-100%)",
+        transition: "transform 0.3s ease-in-out",
+        background:
+          "linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(240,249,255,0.95) 50%, rgba(255,255,255,0.95) 100%)",
+        backgroundSize: "200% 100%",
+        animation: "navWaterFlow 8s ease-in-out infinite",
       }}
     >
       {/* Logo Section */}
@@ -47,6 +79,7 @@ export default function Navbar() {
         onMouseOut={(e) => {
           e.currentTarget.style.transform = "scale(1)"
         }}
+        onClick={() => (window.location.href = "/")} // Link logo to home
       >
         <div
           style={{
@@ -67,7 +100,7 @@ export default function Navbar() {
         </div>
         <h1
           style={{
-            fontSize: "18px",
+            fontSize: "16px",
             fontWeight: "bold",
             transition: "all 0.3s ease",
           }}
@@ -80,8 +113,8 @@ export default function Navbar() {
             e.target.style.transform = "scale(1)"
           }}
         >
-          <span style={{ color: "#1e293b" }}>SUR</span>
-          <span style={{ color: "#3b82f6" }}>AX</span>
+          <span style={{ color: "#1e293b" }}>Surax</span>
+          <span style={{ color: "#3b82f6" }}> Swimming Pool Construction</span>
         </h1>
       </div>
 
@@ -195,6 +228,17 @@ export default function Navbar() {
         @keyframes activeWaterGlow {
           0%, 100% { opacity: 0.6; transform: scaleX(1); }
           50% { opacity: 0.3; transform: scaleX(1.2); filter: blur(1px); }
+        }
+        @keyframes navWaterFlow {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
         }
       `}</style>
     </nav>
